@@ -53,8 +53,8 @@ end
 ------------------------------
 -- Load External Command Scripts
 ------------------------------
-loadstring(game:HttpGet("https://raw.githubusercontent.com/JejcoTwiUmYQXhBpKMDl/deinemudda/refs/heads/main/allcmdss.luau"))()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/JejcoTwiUmYQXhBpKMDl/deinemudda/refs/heads/main/loadcmds.luau"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/8973951821973068216/11374577211057006363/refs/heads/main/allcmdss.luau"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/8973951821973068216/11374577211057006363/refs/heads/main/loadcmds.luau"))()
 
 ------------------------------
 -- Helper: Get Current Chat Input Box
