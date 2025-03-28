@@ -558,7 +558,7 @@ local Helper = {"newbornfromthedark", "FadedSkyPlay"}
 local Scripters = {"GYATT_DAMN1", "328ml", "29Kyooo", "BloxiAstra", "", "iLoveScriptsMiniG"}
 local Owners = {"Dxan_PlayS", "Xeni_he07", "AliKhammas1234", "AliKhammas", "I_LOVEYOU12210", "AK_ADMEN1", "YournothimbuddyXD", "AK_ADMEN2", "Akksosdmdokdkddmkd"}
 local Supporter = {"Robloxian74630436", "MyLittlePonySEDE"}
-local AKStaff = {"goekaycool", "goetemp_1"}
+local AKStaff = {"goekaycool", "goetemp_1", "hallloweenss", "24ksm1le5"}
 local LuckyGods = {"lIIluckyIIII", "TheSadMan198", "XxLuckyXx187", "XxRaportXX", "FellFlower2"}
 
 --------------------------------------------------
