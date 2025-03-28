@@ -1,4 +1,5 @@
-
+pcall(function()
+     if game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("PremiumCommandBar"):FindFirstChild("Frame") and game:GetService("CoreGui"):FindFirstChild("AdminActiveGUI"):FindFirstChild("MainContainer"):FindFirstChild("HeartbeatDot") then
     Players = game:GetService("Players")
     Workspace = game:GetService("Workspace")
     UserInputService = game:GetService("UserInputService")
