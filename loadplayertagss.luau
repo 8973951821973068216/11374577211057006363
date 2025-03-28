@@ -87,7 +87,7 @@ local ChatWhitelist = {}  -- Keys are stored as player.Name:lower()
 -- Configuration and Rank Colors
 --------------------------------------------------
 local CONFIG = {
-    TAG_SIZE = UDim2.new(0, 120, 0, 40),
+    TAG_SIZE = UDim2.new(0, 100, 0, 35),
     TAG_OFFSET = Vector3.new(0, 2.4, 0),
     MAX_DISTANCE = 1000000,
     SCALE_DISTANCE = 150,
@@ -140,7 +140,12 @@ local RankColors = {
 --------------------------------------------------
 -- Notification UI (for local player's prompt)
 --------------------------------------------------
+local hasShownNotification = false -- New variable to track if notification has been shown
+
 local function createNotificationUI()
+    if hasShownNotification then return end -- Return early if already shown
+    hasShownNotification = true -- Mark as shown
+    
     local gui = Instance.new("ScreenGui")
     gui.Name = "TagNotification"
     gui.ResetOnSpawn = false
@@ -150,7 +155,7 @@ local function createNotificationUI()
     frame.Size = UDim2.new(0, 280, 0, 140)
     frame.Position = UDim2.new(0.5, -140, 0.5, -70)
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    frame.BackgroundTransparency = 0 -- Fully visible immediately
+    frame.BackgroundTransparency = 0
     frame.BorderSizePixel = 0
     frame.Parent = gui
 
@@ -176,7 +181,7 @@ local function createNotificationUI()
     title.TextColor3 = Color3.new(1, 1, 1)
     title.TextSize = 16
     title.Text = "Tag Visibility Settings"
-    title.TextTransparency = 0 -- Instantly visible
+    title.TextTransparency = 0
     title.Parent = frame
 
     local messageLabel = Instance.new("TextLabel")
@@ -188,7 +193,7 @@ local function createNotificationUI()
     messageLabel.TextSize = 14
     messageLabel.TextWrapped = true
     messageLabel.Text = "Would you like to display your rank tag above your character?"
-    messageLabel.TextTransparency = 0 -- Instantly visible
+    messageLabel.TextTransparency = 0
     messageLabel.Parent = frame
 
     local function createButton(text, position, color)
@@ -202,8 +207,8 @@ local function createNotificationUI()
         button.TextSize = 14
         button.Text = text
         button.AutoButtonColor = true
-        button.BackgroundTransparency = 0 -- Instantly visible
-        button.TextTransparency = 0 -- Instantly visible
+        button.BackgroundTransparency = 0
+        button.TextTransparency = 0
         button.Parent = frame
 
         local buttonCorner = Instance.new("UICorner")
@@ -326,141 +331,150 @@ local function attachTagToHead(character, player, rankText)
     tag.AlwaysOnTop = true
     tag.MaxDistance = CONFIG.MAX_DISTANCE
 
+    -- Main container with glass effect
     local container = Instance.new("TextButton")
     container.Size = UDim2.new(1, 0, 1, 0)
-    container.BackgroundTransparency = 0.2
-    container.BackgroundColor3 = RankColors[rankText].primary
+    container.BackgroundColor3 = Color3.fromRGB(148, 203, 255)
+    container.BackgroundTransparency = 0.6
     container.BorderSizePixel = 0
     container.Text = ""
     container.Parent = tag
+    container.ClipsDescendants = true
+
+    -- Outer trace line
+    local outerTrace = Instance.new("UIStroke")
+    outerTrace.Color = RankColors[rankText].accent
+    outerTrace.Thickness = 3
+    outerTrace.Transparency = 0.7
+    outerTrace.Parent = container
+
+    -- Gradient effect
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(148, 203, 255))
+    })
+    gradient.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.2),
+        NumberSequenceKeypoint.new(1, 0.6)
+    })
+    gradient.Rotation = 45
+    gradient.Parent = container
+
+    -- Emoji container
+    local emojiContainer = Instance.new("Frame")
+    emojiContainer.Size = UDim2.new(0.25, 0, 0.9, 0)
+    emojiContainer.Position = UDim2.new(0.02, 0, 0.05, 0)
+    emojiContainer.BackgroundTransparency = 1
+    emojiContainer.Parent = container
 
     local emoji = Instance.new("TextLabel")
-    emoji.Size = UDim2.new(1, 0, 0.5, 0)
-    emoji.Position = UDim2.new(0, 0, -0.45, 0)
+    emoji.Size = UDim2.new(1, 0, 1, 0)
     emoji.BackgroundTransparency = 1
-    emoji.TextSize = 25
+    emoji.TextSize = 20
     emoji.TextColor3 = RankColors[rankText].accent
-    emoji.Font = Enum.Font.SourceSans
+    emoji.Font = Enum.Font.GothamBold
 
-    if rankText == "AK KING" then
-        emoji.Text = "👑"
-    elseif rankText == "AK CO OWNER" then
-        emoji.Text = "⚡"
-    elseif rankText == "AK DADDY" then
-        emoji.Text = "💎"
-    elseif rankText == "AK STAFF" then
-        emoji.Text = "🔰"
-    elseif rankText == "AK ADVERTISER" then
-        emoji.Text = "📢"
-    elseif rankText == "AK HELPER" then
-        emoji.Text = "📢"
-    elseif rankText == "AK USER" then
-        emoji.Text = "♦️"
-    elseif rankText == "OG BUYER" then
-        emoji.Text = "∞"
-    elseif rankText == "AK LUCKYGOD" then
-        emoji.Text = "🍀"
-    end
+    local emojiMap = {
+        ["AK KING"] = "👑",
+        ["AK CO OWNER"] = "⚡",
+        ["AK DADDY"] = "💎",
+        ["AK STAFF"] = "🔰",
+        ["AK ADVERTISER"] = "📢",
+        ["AK HELPER"] = "📢",
+        ["AK USER"] = "♦️",
+        ["OG BUYER"] = "∞",
+        ["AK LUCKYGOD"] = "🍀"
+    }
+    emoji.Text = emojiMap[rankText] or "⭐"
+    emoji.Parent = emojiContainer
 
-    emoji.Parent = container
-
-    local heartbeatTweenInfo = TweenInfo.new(0.7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
-    local heartbeatTween = TweenService:Create(emoji, heartbeatTweenInfo, {TextSize = 20})
-    heartbeatTween:Play()
+    -- Border and corner
+    local border = Instance.new("UIStroke")
+    border.Color = RankColors[rankText].accent
+    border.Thickness = 2
+    border.Transparency = 0.3
+    border.Parent = container
 
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0.2, 0)
     corner.Parent = container
 
-    local accent = Instance.new("Frame")
-    accent.Size = UDim2.new(0.7, 0, 0, 2.5)
-    accent.Position = UDim2.new(0.5, 0, 0, 0)
-    accent.BackgroundColor3 = RankColors[rankText].accent
-    accent.BorderSizePixel = 0
-    accent.Parent = container
+    -- Rank text frame
+    local rankFrame = Instance.new("Frame")
+    rankFrame.Size = UDim2.new(0.68, 0, 0.45, 0)
+    rankFrame.Position = UDim2.new(0.28, 0, 0.1, 0)
+    rankFrame.BackgroundTransparency = 0.8
+    rankFrame.BackgroundColor3 = RankColors[rankText].accent
+    rankFrame.Parent = container
 
-    local accentCorner = Instance.new("UICorner")
-    accentCorner.CornerRadius = UDim.new(0, 2)
-    accentCorner.Parent = accent
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0.5, 0)
+    corner.Parent = rankFrame
 
-    accent.AnchorPoint = Vector2.new(0.5, 0.5)
-    accent.Position = UDim2.new(0.5, 0, 0, 0)
-
-    local tweenInfoAccent = TweenInfo.new(0.7, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true)
-    local tweenAccent = TweenService:Create(accent, tweenInfoAccent, {Size = UDim2.new(0.1, 0, 0, 2.5)})
-    tweenAccent:Play()
-
+    -- Rank text
     local rankLabel = Instance.new("TextLabel")
-    rankLabel.Size = UDim2.new(1, 0, 0.6, 0)
-    rankLabel.Position = UDim2.new(0, 0, 0.1, 0)
+    rankLabel.Size = UDim2.new(1, 0, 1, 0)
     rankLabel.BackgroundTransparency = 1
     rankLabel.Text = rankText
     rankLabel.TextColor3 = Color3.new(1, 1, 1)
-    rankLabel.TextSize = 17
-    rankLabel.Font = Enum.Font.SourceSansBold
-    rankLabel.Parent = container
+    rankLabel.TextSize = 15
+    rankLabel.Font = Enum.Font.GothamBold
+    rankLabel.TextXAlignment = Enum.TextXAlignment.Center
+    rankLabel.TextScaled = true
+    rankLabel.Parent = rankFrame
 
-    local maxDistance = 50
-    local minSize = 8
-    local maxSize = 17
-
-    RunService.Heartbeat:Connect(function()
-        local localPlayer = Players.LocalPlayer
-        local localPlayerHead = localPlayer.Character and localPlayer.Character:WaitForChild("Head")
-        if localPlayer and localPlayerHead and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local targetHumanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
-            if targetHumanoidRootPart then
-                local distance = (localPlayerHead.Position - targetHumanoidRootPart.Position).Magnitude
-                local newSize = math.clamp(maxSize - ((distance / maxDistance) * (maxSize - minSize)), minSize, maxSize)
-                rankLabel.TextSize = newSize
-            end
-        end
-    end)
-
+    -- Username
     local userLabel = Instance.new("TextLabel")
-    userLabel.Size = UDim2.new(1, 0, 0.4, 0)
-    userLabel.Position = UDim2.new(0, 0, 0.6, 0)
+    userLabel.Size = UDim2.new(0.58, 0, 0.3, 0)
+    userLabel.Position = UDim2.new(0.38, 0, 0.6, 0)
     userLabel.BackgroundTransparency = 1
     userLabel.Text = "@" .. player.Name
     userLabel.TextColor3 = RankColors[rankText].accent
-    userLabel.TextSize = 8
-    userLabel.Font = Enum.Font.GothamBold
+    userLabel.TextScaled = true
+    userLabel.Font = Enum.Font.GothamMedium
+    userLabel.TextXAlignment = Enum.TextXAlignment.Left
     userLabel.Parent = container
-
-    tag.Parent = game.CoreGui
-
-    local playerHead = player.Character:WaitForChild("Head")
-    local humanoidRootPart = player.Character:WaitForChild("HumanoidRootPart")
-    RunService.Heartbeat:Connect(function()
-        local localPlayer = Players.LocalPlayer
-        local localPlayerHead = localPlayer.Character and localPlayer.Character:WaitForChild("Head")
-        if localPlayer and localPlayerHead and player.Character and playerHead and humanoidRootPart then
-            local distance = (localPlayerHead.Position - humanoidRootPart.Position).Magnitude
-            userLabel.Visible = distance <= maxDistance
-        end
-    end)
-
-    local connection = RunService.Heartbeat:Connect(function()
-        if not (character and character:FindFirstChild("Head") and Players.LocalPlayer.Character) then return end
-        local localCharacter = Players.LocalPlayer.Character
-        local localHead = localCharacter:FindFirstChild("Head")
-        if not localHead then return end
-        local distance = (head.Position - localHead.Position).Magnitude
-        tag.Size = UDim2.new(0, CONFIG.TAG_SIZE.X.Offset * math.clamp(1 - (distance / CONFIG.SCALE_DISTANCE), 0.5, 2), 0, CONFIG.TAG_SIZE.Y.Offset * math.clamp(1 - (distance / CONFIG.SCALE_DISTANCE), 0.5, 2))
-    end)
-
-    tag.AncestryChanged:Connect(function(_, parent)
-        if not parent then
-            connection:Disconnect()
-        end
-    end)
+    local border2 = Instance.new("UIStroke")
+    border2.Color = RankColors[rankText].accent
+    border2.Thickness = 0.1
+    border2.Transparency = 0
+    border2.Parent = userLabel
 
     container.MouseEnter:Connect(function()
-        TweenService:Create(container, TweenInfo.new(0.5), {BackgroundTransparency = 0}):Play()
+        TweenService:Create(container, TweenInfo.new(0.3), {BackgroundTransparency = 0.4}):Play()
+        TweenService:Create(border, TweenInfo.new(0.3), {Transparency = 0}):Play()
+        TweenService:Create(rankFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.6}):Play()
     end)
 
     container.MouseLeave:Connect(function()
-        TweenService:Create(container, TweenInfo.new(0.2), {BackgroundTransparency = 0.2}):Play()
+        TweenService:Create(container, TweenInfo.new(0.3), {BackgroundTransparency = 0.6}):Play()
+        TweenService:Create(border, TweenInfo.new(0.3), {Transparency = 0.3}):Play()
+        TweenService:Create(rankFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.8}):Play()
+    end)
+
+    RunService.Heartbeat:Connect(function()
+        if not (character and character:FindFirstChild("Head") and Players.LocalPlayer.Character) then return end
+        local localHead = Players.LocalPlayer.Character:FindFirstChild("Head")
+        if not localHead then return end
+        local distance = (head.Position - localHead.Position).Magnitude
+        local scale = math.clamp(1 - (distance / CONFIG.SCALE_DISTANCE), 0.5, 2)
+        tag.Size = UDim2.new(0, CONFIG.TAG_SIZE.X.Offset * scale, 0, CONFIG.TAG_SIZE.Y.Offset * scale)
+    end)
+
+    tag.Parent = game.CoreGui
+
+    tag.AncestryChanged:Connect(function(_, parent)
+        if not parent then
+            RunService.Heartbeat:Disconnect()
+        end 
+    end)
+
+    -- Click handler for teleport
+    container.MouseButton1Click:Connect(function()
+        if player ~= Players.LocalPlayer then
+            teleportToPlayer(player)
+        end
     end)
     container.MouseButton1Click:Connect(function()
         if player ~= Players.LocalPlayer then
@@ -489,8 +503,14 @@ local function createTag(player, rankText, showPrompt)
         end
 
         local gui, yesButton, noButton, blur = createNotificationUI()
+        if not gui then
+            return
+        end
         -- Attempt to get PlayerGui immediately; if not available, wait briefly.
-        local playerGui = player:FindFirstChild("PlayerGui") or player:WaitForChild("PlayerGui", 1)
+        local playerGui = player:WaitForChild("PlayerGui", 5)
+        if not playerGui then
+            return
+        end
         gui.Parent = playerGui
 
         local function cleanup()
@@ -596,6 +616,40 @@ local function setupChatListener(player)
         end
     end)
 end
+
+-- Continuously check for missing tags
+spawn(function()
+    while true do
+        -- Check and remove tags without valid adornees in CoreGui
+        for _, gui in ipairs(game.CoreGui:GetChildren()) do
+            if gui:IsA("BillboardGui") and gui.Name == "RankTag" then
+                if not gui.Adornee or not gui.Adornee:IsDescendantOf(game) then
+                    gui:Destroy()
+                end
+            end
+        end
+
+        -- Check and apply missing tags
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player.Character and player.Character:FindFirstChild("Head") then
+                -- Check CoreGui for existing tags
+                local tagFound = false
+                for _, gui in ipairs(game.CoreGui:GetChildren()) do
+                    if gui:IsA("BillboardGui") and gui.Name == "RankTag" and gui.Adornee == player.Character.Head then
+                        tagFound = true
+                        break
+                    end
+                end
+                
+                -- If no tag found, apply one
+                if not tagFound then
+                    applyPlayerTag(player)
+                end
+            end
+        end
+        wait(0)
+    end
+end)
 
 -- Initialize tag system IMMEDIATELY for existing players
 for _, player in ipairs(Players:GetPlayers()) do
