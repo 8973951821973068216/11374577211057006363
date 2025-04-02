@@ -1,3 +1,7 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local groupId = 35821718
+if player:IsInGroup(groupId) then
 -- Services
 local AES = game:GetService("AvatarEditorService")
 local Players = game:GetService("Players")
@@ -834,3 +838,7 @@ mainContainer.InputBegan:Connect(function(input)
         commandsGui.Enabled = not commandsGui.Enabled
     end
 end)
+else
+	setclipboard("https://www.roblox.com/communities/35821718/AK-Users#!/about")
+    player:Kick("You must be in the group to run this script. Please join the group and try again the link has been copied.")
+end
