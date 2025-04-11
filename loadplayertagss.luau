@@ -342,9 +342,9 @@ local function attachTagToHead(character, player, rankText)
     local container = Instance.new("TextButton")
     container.Name = "TagContainer"
     container.Size = UDim2.new(1, 0, 1, 0)
-    -- Even darker background and transparency
-    container.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-    container.BackgroundTransparency = 0.7
+    -- Pure Black Background with transparency
+    container.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- Pure black
+    container.BackgroundTransparency = 0.8 -- Transparency level
     container.BorderSizePixel = 0
     container.Text = ""
     container.AutoButtonColor = false
@@ -442,7 +442,7 @@ local function attachTagToHead(character, player, rankText)
         TweenService:Create(rankFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.6}):Play()
     end)
     container.MouseLeave:Connect(function()
-        TweenService:Create(container, TweenInfo.new(0.3), {BackgroundTransparency = 0.7}):Play() -- Revert to the slightly less transparent background
+        TweenService:Create(container, TweenInfo.new(0.3), {BackgroundTransparency = 0.8}):Play() -- Revert to the slightly more transparent background
         TweenService:Create(outerTrace, TweenInfo.new(0.3), {Transparency = 0.5}):Play()
         TweenService:Create(rankFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.8}):Play()
     end)
