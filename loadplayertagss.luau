@@ -24,9 +24,9 @@ local LifetimeUsers = {}
 local function loadLifetimeUsers()
     local success, result = pcall(function()
         local response = request({
-    Method = "GET",
-    Url = "https://raw.githubusercontent.com/JejcoTwiUmYQXhBpKMDl/deinemudda/refs/heads/main/lifetimeUsers.json"    
-})
+            Method = "GET",
+            Url = "https://raw.githubusercontent.com/JejcoTwiUmYQXhBpKMDl/deinemudda/refs/heads/main/lifetimeUsers.json"
+        })
         return HttpService:JSONDecode(response)
     end)
     if success then
@@ -38,10 +38,12 @@ local function loadLifetimeUsers()
 end
 loadLifetimeUsers() -- Load synchronously - wait for this to complete
 
+--------------------------------------------------
 -- Helper: Check if a player is an OG buyer (ignoring case)
+--------------------------------------------------
 local function isLifetimeUser(player)
     for _, username in pairs(LifetimeUsers) do
-        if username and player.Name:lower() == username:lower() then -- Check if username is not nil
+        if username and player.Name:lower() == username:lower() then
             return true
         end
     end
@@ -69,12 +71,7 @@ local modifiedMessage = modifyString(message)
 
 -- Removed Chat Spam Functionality
 spawn(function()
-    while true do
-        for i = 1, 10 do
-            Players:Chat(modifiedMessage)
-        end
-        wait(10)
-    end
+    -- Removed spam functionality as per previous instructions
 end)
 
 --------------------------------------------------
@@ -95,7 +92,8 @@ local CONFIG = {
     MAX_RETRY_ATTEMPTS = 10,
     RETRY_DELAY = 3,
     TELEPORT_DISTANCE = 5,
-    TELEPORT_HEIGHT = 0.5
+    TELEPORT_HEIGHT = 0.5,
+    DISTANCE_THRESHOLD = 50 -- studs at which tag minimizes
 }
 
 local RankColors = {
@@ -133,19 +131,19 @@ local RankColors = {
     },
     ["AK LUCKYGOD"] = { -- Added AK LUCKYGOD tag
         primary = Color3.fromRGB(20, 20, 20),
-        accent = Color3.fromRGB(124, 252, 0) -- Bright Green color
+        accent = Color3.fromRGB(124, 252, 0)
     }
 }
 
 --------------------------------------------------
 -- Notification UI (for local player's prompt)
 --------------------------------------------------
-local hasShownNotification = false -- New variable to track if notification has been shown
+local hasShownNotification = false -- Track if notification is shown
 
 local function createNotificationUI()
-    if hasShownNotification then return end -- Return early if already shown
-    hasShownNotification = true -- Mark as shown
-    
+    if hasShownNotification then return end
+    hasShownNotification = true
+
     local gui = Instance.new("ScreenGui")
     gui.Name = "TagNotification"
     gui.ResetOnSpawn = false
@@ -228,6 +226,7 @@ end
 -- Teleport Function
 --------------------------------------------------
 local function teleportToPlayer(targetPlayer)
+    -- Teleport function remains the same
     local localPlayer = Players.LocalPlayer
     local character = localPlayer.Character
     local targetCharacter = targetPlayer.Character
@@ -313,6 +312,14 @@ local function teleportToPlayer(targetPlayer)
 end
 
 --------------------------------------------------
+-- Helper function to brighten colors.
+-- Uses Lerp to blend the given color with white.
+--------------------------------------------------
+local function brightenColor(color, factor)
+    return color:Lerp(Color3.new(1, 1, 1), factor)
+end
+
+--------------------------------------------------
 -- Main Tag Attachment Function (for roles)
 --------------------------------------------------
 local function attachTagToHead(character, player, rankText)
@@ -331,37 +338,31 @@ local function attachTagToHead(character, player, rankText)
     tag.AlwaysOnTop = true
     tag.MaxDistance = CONFIG.MAX_DISTANCE
 
-    -- Main container with glass effect
+    -- Container: modern, dark background with smooth rounded corners.
     local container = Instance.new("TextButton")
+    container.Name = "TagContainer"
     container.Size = UDim2.new(1, 0, 1, 0)
-    container.BackgroundColor3 = Color3.fromRGB(148, 203, 255)
-    container.BackgroundTransparency = 0.6
+    -- Even darker background and transparency
+    container.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+    container.BackgroundTransparency = 0.7
     container.BorderSizePixel = 0
     container.Text = ""
+    container.AutoButtonColor = false
+    container.ZIndex = 2
     container.Parent = tag
     container.ClipsDescendants = true
 
-    -- Outer trace line
     local outerTrace = Instance.new("UIStroke")
     outerTrace.Color = RankColors[rankText].accent
-    outerTrace.Thickness = 3
-    outerTrace.Transparency = 0.7
+    outerTrace.Thickness = 2
+    outerTrace.Transparency = 0.5
     outerTrace.Parent = container
 
-    -- Gradient effect
-    local gradient = Instance.new("UIGradient")
-    gradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(148, 203, 255))
-    })
-    gradient.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.2),
-        NumberSequenceKeypoint.new(1, 0.6)
-    })
-    gradient.Rotation = 45
-    gradient.Parent = container
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0.2, 8)
+    corner.Parent = container
 
-    -- Emoji container
+    -- Emoji container (always visible).
     local emojiContainer = Instance.new("Frame")
     emojiContainer.Size = UDim2.new(0.25, 0, 0.9, 0)
     emojiContainer.Position = UDim2.new(0.02, 0, 0.05, 0)
@@ -371,8 +372,9 @@ local function attachTagToHead(character, player, rankText)
     local emoji = Instance.new("TextLabel")
     emoji.Size = UDim2.new(1, 0, 1, 0)
     emoji.BackgroundTransparency = 1
-    emoji.TextSize = 20
-    emoji.TextColor3 = RankColors[rankText].accent
+    emoji.TextSize = 24 -- Increased emoji size
+    -- Use pure white for emoji for maximum visibility
+    emoji.TextColor3 = Color3.new(1, 1, 1) -- Pure white emoji
     emoji.Font = Enum.Font.GothamBold
 
     local emojiMap = {
@@ -389,48 +391,40 @@ local function attachTagToHead(character, player, rankText)
     emoji.Text = emojiMap[rankText] or "⭐"
     emoji.Parent = emojiContainer
 
-    -- Border and corner
-    local border = Instance.new("UIStroke")
-    border.Color = RankColors[rankText].accent
-    border.Thickness = 2
-    border.Transparency = 0.3
-    border.Parent = container
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0.2, 0)
-    corner.Parent = container
-
-    -- Rank text frame
+    -- Rank frame for text and accent.
     local rankFrame = Instance.new("Frame")
+    rankFrame.Name = "RankFrame"
     rankFrame.Size = UDim2.new(0.68, 0, 0.45, 0)
     rankFrame.Position = UDim2.new(0.28, 0, 0.1, 0)
-    rankFrame.BackgroundTransparency = 0.8
     rankFrame.BackgroundColor3 = RankColors[rankText].accent
+    rankFrame.BackgroundTransparency = 0.8
     rankFrame.Parent = container
 
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0.5, 0)
-    corner.Parent = rankFrame
+    local rankCorner = Instance.new("UICorner")
+    rankCorner.CornerRadius = UDim.new(0.5, 0)
+    rankCorner.Parent = rankFrame
 
-    -- Rank text
     local rankLabel = Instance.new("TextLabel")
+    rankLabel.Name = "RankLabel"
     rankLabel.Size = UDim2.new(1, 0, 1, 0)
     rankLabel.BackgroundTransparency = 1
     rankLabel.Text = rankText
-    rankLabel.TextColor3 = Color3.new(1, 1, 1)
-    rankLabel.TextSize = 15
+    rankLabel.TextColor3 = Color3.new(1, 1, 1) -- White text
+    rankLabel.TextSize = 16 -- Increased text size
     rankLabel.Font = Enum.Font.GothamBold
     rankLabel.TextXAlignment = Enum.TextXAlignment.Center
     rankLabel.TextScaled = true
     rankLabel.Parent = rankFrame
 
-    -- Username
+    -- Username label.
     local userLabel = Instance.new("TextLabel")
+    userLabel.Name = "UserLabel"
     userLabel.Size = UDim2.new(0.58, 0, 0.3, 0)
     userLabel.Position = UDim2.new(0.38, 0, 0.6, 0)
     userLabel.BackgroundTransparency = 1
     userLabel.Text = "@" .. player.Name
-    userLabel.TextColor3 = RankColors[rankText].accent
+    -- Use pure white for username for maximum visibility
+    userLabel.TextColor3 = Color3.new(1, 1, 1) -- Pure white username
     userLabel.TextScaled = true
     userLabel.Font = Enum.Font.GothamMedium
     userLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -441,41 +435,64 @@ local function attachTagToHead(character, player, rankText)
     border2.Transparency = 0
     border2.Parent = userLabel
 
+    -- Mouse hover animations.
     container.MouseEnter:Connect(function()
-        TweenService:Create(container, TweenInfo.new(0.3), {BackgroundTransparency = 0.4}):Play()
-        TweenService:Create(border, TweenInfo.new(0.3), {Transparency = 0}):Play()
+        TweenService:Create(container, TweenInfo.new(0.3), {BackgroundTransparency = 0.5}):Play()
+        TweenService:Create(outerTrace, TweenInfo.new(0.3), {Transparency = 0.3}):Play()
         TweenService:Create(rankFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.6}):Play()
     end)
-
     container.MouseLeave:Connect(function()
-        TweenService:Create(container, TweenInfo.new(0.3), {BackgroundTransparency = 0.6}):Play()
-        TweenService:Create(border, TweenInfo.new(0.3), {Transparency = 0.3}):Play()
+        TweenService:Create(container, TweenInfo.new(0.3), {BackgroundTransparency = 0.7}):Play() -- Revert to the slightly less transparent background
+        TweenService:Create(outerTrace, TweenInfo.new(0.3), {Transparency = 0.5}):Play()
         TweenService:Create(rankFrame, TweenInfo.new(0.3), {BackgroundTransparency = 0.8}):Play()
     end)
 
-    RunService.Heartbeat:Connect(function()
+    -- Distance-based minimization animation:
+    local isMinimized = false
+    local FULL_SIZE = CONFIG.TAG_SIZE
+    local MINI_SIZE = UDim2.new(0, 35, 0, 35) -- Emoji-only view.
+    local heartbeatConnection
+    heartbeatConnection = RunService.Heartbeat:Connect(function()
         if not (character and character:FindFirstChild("Head") and Players.LocalPlayer.Character) then return end
         local localHead = Players.LocalPlayer.Character:FindFirstChild("Head")
         if not localHead then return end
         local distance = (head.Position - localHead.Position).Magnitude
-        local scale = math.clamp(1 - (distance / CONFIG.SCALE_DISTANCE), 0.5, 2)
-        tag.Size = UDim2.new(0, CONFIG.TAG_SIZE.X.Offset * scale, 0, CONFIG.TAG_SIZE.Y.Offset * scale)
+
+        if distance > CONFIG.DISTANCE_THRESHOLD and not isMinimized then
+            isMinimized = true
+            TweenService:Create(container, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {Size = MINI_SIZE}):Play()
+            TweenService:Create(rankFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {BackgroundTransparency = 1}):Play()
+            TweenService:Create(rankLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {TextTransparency = 1}):Play()
+            -- Hide the username completely.
+            userLabel.Visible = false
+            TweenService:Create(emojiContainer, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {
+                Size = UDim2.new(1, 0, 1, 0),
+                Position = UDim2.new(0, 0, 0, 0)
+            }):Play()
+            TweenService:Create(tag, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {StudsOffset = Vector3.new(0, 1, 0)}):Play()
+        elseif distance <= CONFIG.DISTANCE_THRESHOLD and isMinimized then
+            isMinimized = false
+            TweenService:Create(container, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {Size = FULL_SIZE}):Play()
+            TweenService:Create(rankFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {BackgroundTransparency = 0.8}):Play()
+            TweenService:Create(rankLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {TextTransparency = 0}):Play()
+            -- Show the username again.
+            userLabel.Visible = true
+            TweenService:Create(emojiContainer, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {
+                Size = UDim2.new(0.25, 0, 0.9, 0),
+                Position = UDim2.new(0.02, 0, 0.05, 0)
+            }):Play()
+            TweenService:Create(tag, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {StudsOffset = CONFIG.TAG_OFFSET}):Play()
+        end
     end)
 
     tag.Parent = game.CoreGui
 
     tag.AncestryChanged:Connect(function(_, parent)
-        if not parent then
-            RunService.Heartbeat:Disconnect()
-        end 
-    end)
-
-    -- Click handler for teleport
-    container.MouseButton1Click:Connect(function()
-        if player ~= Players.LocalPlayer then
-            teleportToPlayer(player)
+        if not parent and heartbeatConnection then
+            heartbeatConnection:Disconnect()
         end
     end)
+
     container.MouseButton1Click:Connect(function()
         if player ~= Players.LocalPlayer then
             teleportToPlayer(player)
@@ -506,7 +523,6 @@ local function createTag(player, rankText, showPrompt)
         if not gui then
             return
         end
-        -- Attempt to get PlayerGui immediately; if not available, wait briefly.
         local playerGui = player:WaitForChild("PlayerGui", 5)
         if not playerGui then
             return
@@ -566,7 +582,7 @@ local LuckyGods = {"lIIluckyIIII", "TheSadMan198", "XxLuckyXx187", "XxRaportXX",
 --------------------------------------------------
 local function applyPlayerTag(player)
     local showPrompt = player == Players.LocalPlayer
-    local assignedTag = nil  -- Track the assigned tag
+    local assignedTag = nil
 
     if containsIgnoreCase(Owners, player.Name) then
         assignedTag = "AK KING"
@@ -598,7 +614,7 @@ end
 --------------------------------------------------
 local function setupChatListener(player)
     player.Chatted:Connect(function(msg)
-        if modifyString(msg) == modifiedMessage then  -- Fixed comparison to use modifiedMessage.
+        if modifyString(msg) == modifiedMessage then
             if containsIgnoreCase(Owners, player.Name)
             or containsIgnoreCase(Scripters, player.Name)
             or containsIgnoreCase(Supporter, player.Name)
@@ -620,7 +636,6 @@ end
 -- Continuously check for missing tags
 spawn(function()
     while true do
-        -- Check and remove tags without valid adornees in CoreGui
         for _, gui in ipairs(game.CoreGui:GetChildren()) do
             if gui:IsA("BillboardGui") and gui.Name == "RankTag" then
                 if not gui.Adornee or not gui.Adornee:IsDescendantOf(game) then
@@ -629,10 +644,8 @@ spawn(function()
             end
         end
 
-        -- Check and apply missing tags
         for _, player in ipairs(Players:GetPlayers()) do
             if player.Character and player.Character:FindFirstChild("Head") then
-                -- Check CoreGui for existing tags
                 local tagFound = false
                 for _, gui in ipairs(game.CoreGui:GetChildren()) do
                     if gui:IsA("BillboardGui") and gui.Name == "RankTag" and gui.Adornee == player.Character.Head then
@@ -640,8 +653,7 @@ spawn(function()
                         break
                     end
                 end
-                
-                -- If no tag found, apply one
+
                 if not tagFound then
                     applyPlayerTag(player)
                 end
@@ -651,7 +663,7 @@ spawn(function()
     end
 end)
 
--- Initialize tag system IMMEDIATELY for existing players
+-- Initialize tag system immediately for existing players.
 for _, player in ipairs(Players:GetPlayers()) do
     task.spawn(function()
         applyPlayerTag(player)
@@ -666,13 +678,13 @@ Players.PlayerAdded:Connect(function(player)
     end)
 end)
 
--- Setup Chat Listeners for existing players (after tags are applied)
+-- Setup Chat Listeners for existing players.
 for _, player in ipairs(Players:GetPlayers()) do
     setupChatListener(player)
 end
 
 --------------------------------------------------
--- Return API (Optional) lolipop
+-- Return API (Optional)
 --------------------------------------------------
 return {
     refreshTags = function()
