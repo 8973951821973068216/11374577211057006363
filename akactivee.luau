@@ -406,7 +406,8 @@ local function createCommandButton(name, description)
         "!unscan map",
         "!annoynearest",
         "!annoyserver",
-        "!vccontroller"
+        "!vccontroller",
+        "!limborbit"
     }
     for _, v in ipairs(micupCmds) do
         if lowerCmd == v then
