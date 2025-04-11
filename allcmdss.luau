@@ -11,6 +11,7 @@ _G.cmds = {
     ["!ftp"] = "https://raw.githubusercontent.com/8973951821973068216/11374577211057006363/refs/heads/main/ftp",
     ["!reanim"] = "https://raw.githubusercontent.com/8973951821973068216/11374577211057006363/refs/heads/main/sizechanger",
     ["!annoynearest"] = "https://raw.githubusercontent.com/8973951821973068216/11374577211057006363/refs/heads/main/annoynearest",
+    ["!limborbit"] = "https://raw.githubusercontent.com/8973951821973068216/11374577211057006363/refs/heads/main/limborbit",
     ["!annoyserver"] = "https://raw.githubusercontent.com/8973951821973068216/11374577211057006363/refs/heads/main/annoyserver",
     ["!trip"] = "https://raw.githubusercontent.com/8973951821973068216/11374577211057006363/refs/heads/main/trip",
     ["!akstalls"] = "https://raw.githubusercontent.com/8973951821973068216/11374577211057006363/refs/heads/main/AKstall",
